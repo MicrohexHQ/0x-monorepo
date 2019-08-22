@@ -37,8 +37,9 @@ library LibFillResults {
     struct FillResults {
         uint256 makerAssetFilledAmount;  // Total amount of makerAsset(s) filled.
         uint256 takerAssetFilledAmount;  // Total amount of takerAsset(s) filled.
-        uint256 makerFeePaid;            // Total amount of ZRX paid by maker(s) to feeRecipient(s).
-        uint256 takerFeePaid;            // Total amount of ZRX paid by taker to feeRecipients(s).
+        uint256 makerFeePaid;            // Total amount of fees paid by maker(s) to feeRecipient(s).
+        uint256 takerFeePaid;            // Total amount of fees paid by taker to feeRecipients(s).
+        uint256 protocolFeePaid;         // Total amount of fees paid by taker to the staking contract.
     }
 
     struct MatchedFillResults {
@@ -57,7 +58,7 @@ library LibFillResults {
         uint256 takerAssetFilledAmount
     )
         internal
-        pure
+        view
         returns (FillResults memory fillResults)
     {
         // Compute proportional transfer amounts
@@ -100,7 +101,7 @@ library LibFillResults {
         bool shouldMaximallyFillOrders
     )
         internal
-        pure
+        view
         returns (MatchedFillResults memory matchedFillResults)
     {
         // Derive maker asset amounts for left & right orders, given store taker assert amounts
@@ -182,6 +183,7 @@ library LibFillResults {
         totalFillResults.takerAssetFilledAmount = fillResults1.takerAssetFilledAmount.safeAdd(fillResults2.takerAssetFilledAmount);
         totalFillResults.makerFeePaid = fillResults1.makerFeePaid.safeAdd(fillResults2.makerFeePaid);
         totalFillResults.takerFeePaid = fillResults1.takerFeePaid.safeAdd(fillResults2.takerFeePaid);
+        totalFillResults.protocolFeePaid = fillResults1.protocolFeePaid.safeAdd(fillResults2.protocolFeePaid);
 
         return totalFillResults;
     }
@@ -237,7 +239,7 @@ library LibFillResults {
                 rightOrder.makerAssetAmount,
                 leftTakerAssetAmountRemaining // matchedFillResults.right.makerAssetFilledAmount
             );
-        } else { 
+        } else {
             // leftTakerAssetAmountRemaining == rightMakerAssetAmountRemaining
             // Case 3: Both orders are fully filled. Technically, this could be captured by the above cases, but
             //         this calculation will be more precise since it does not include rounding.

@@ -96,6 +96,7 @@ blockchainTests('LibFillResults', env => {
                 );
             }
 
+            // TODO(jalextowle): We might want to add combinatorial testing for protocol fees
             async function testCalculateFillResultsAsync(
                 orderTakerAssetAmount: BigNumber,
                 takerAssetFilledAmount: BigNumber,
@@ -284,12 +285,14 @@ blockchainTests('LibFillResults', env => {
                     takerAssetFilledAmount: ONE_ETHER.times(2),
                     makerFeePaid: ONE_ETHER.times(0.001),
                     takerFeePaid: ONE_ETHER.times(0.002),
+                    protocolFeePaid: ONE_ETHER.times(0.003),
                 },
                 {
                     makerAssetFilledAmount: ONE_ETHER.times(0.01),
                     takerAssetFilledAmount: ONE_ETHER.times(2).times(0.01),
                     makerFeePaid: ONE_ETHER.times(0.001).times(0.01),
                     takerFeePaid: ONE_ETHER.times(0.002).times(0.01),
+                    protocolFeePaid: ONE_ETHER.times(0.003).times(0.01),
                 },
             ];
 
@@ -343,6 +346,17 @@ blockchainTests('LibFillResults', env => {
                 );
                 return expect(libsContract.addFillResults.callAsync(a, b)).to.revertWith(expectedError);
             });
+
+            it('reverts if computing `protocolFeePaid` overflows', async () => {
+                const [a, b] = _.cloneDeep(DEFAULT_FILL_RESULTS);
+                b.protocolFeePaid = MAX_UINT256;
+                const expectedError = new SafeMathRevertErrors.SafeMathError(
+                    SafeMathRevertErrors.SafeMathErrorCodes.Uint256AdditionOverflow,
+                    a.protocolFeePaid,
+                    b.protocolFeePaid,
+                );
+                return expect(libsContract.addFillResults.callAsync(a, b)).to.revertWith(expectedError);
+            });
         });
     });
 
@@ -351,6 +365,7 @@ blockchainTests('LibFillResults', env => {
         takerAssetFilledAmount: constants.ZERO_AMOUNT,
         makerFeePaid: constants.ZERO_AMOUNT,
         takerFeePaid: constants.ZERO_AMOUNT,
+        protocolFeePaid: constants.ZERO_AMOUNT,
     };
 
     const EMPTY_MATCHED_FILL_RESULTS: MatchedFillResults = {
@@ -366,12 +381,14 @@ blockchainTests('LibFillResults', env => {
             takerAssetFilledAmount: Web3Wrapper.toBaseUnitAmount(10, 18),
             makerFeePaid: Web3Wrapper.toBaseUnitAmount(100, 16),
             takerFeePaid: Web3Wrapper.toBaseUnitAmount(100, 16),
+            protocolFeePaid: constants.ZERO_AMOUNT,
         },
         right: {
             makerAssetFilledAmount: Web3Wrapper.toBaseUnitAmount(10, 18),
             takerAssetFilledAmount: Web3Wrapper.toBaseUnitAmount(2, 18),
             makerFeePaid: Web3Wrapper.toBaseUnitAmount(100, 16),
             takerFeePaid: Web3Wrapper.toBaseUnitAmount(100, 16),
+            protocolFeePaid: constants.ZERO_AMOUNT,
         },
         profitInLeftMakerAsset: Web3Wrapper.toBaseUnitAmount(3, 18),
         profitInRightMakerAsset: constants.ZERO_AMOUNT,
