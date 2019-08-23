@@ -45,7 +45,9 @@ contract MixinMatchOrders is
         bytes[] memory rightSignatures
     )
         public
+        payable
         nonReentrant
+        refundFinalBalance
         returns (LibFillResults.BatchMatchedFillResults memory batchMatchedFillResults)
     {
         return _batchMatchOrders(
@@ -73,7 +75,9 @@ contract MixinMatchOrders is
         bytes[] memory rightSignatures
     )
         public
+        payable
         nonReentrant
+        refundFinalBalance
         returns (LibFillResults.BatchMatchedFillResults memory batchMatchedFillResults)
     {
         return _batchMatchOrders(
@@ -101,7 +105,9 @@ contract MixinMatchOrders is
         bytes memory rightSignature
     )
         public
+        payable
         nonReentrant
+        refundFinalBalance
         returns (LibFillResults.MatchedFillResults memory matchedFillResults)
     {
         return _matchOrders(
@@ -129,7 +135,9 @@ contract MixinMatchOrders is
         bytes memory rightSignature
     )
         public
+        payable
         nonReentrant
+        refundFinalBalance
         returns (LibFillResults.MatchedFillResults memory matchedFillResults)
     {
         return _matchOrders(
@@ -277,7 +285,7 @@ contract MixinMatchOrders is
                 // Update the batched fill results once the leftIdx is updated.
                 batchMatchedFillResults.left[leftIdx++] = leftFillResults;
                 // Clear the intermediate fill results value.
-                leftFillResults = LibFillResults.FillResults(0, 0, 0, 0);
+                leftFillResults = LibFillResults.FillResults(0, 0, 0, 0, 0);
 
                 // If all of the left orders have been filled, break out of the loop.
                 // Otherwise, update the current right order.
@@ -297,7 +305,7 @@ contract MixinMatchOrders is
                 // Update the batched fill results once the rightIdx is updated.
                 batchMatchedFillResults.right[rightIdx++] = rightFillResults;
                 // Clear the intermediate fill results value.
-                rightFillResults = LibFillResults.FillResults(0, 0, 0, 0);
+                rightFillResults = LibFillResults.FillResults(0, 0, 0, 0, 0);
 
                 // If all of the right orders have been filled, break out of the loop.
                 // Otherwise, update the current right order.
@@ -380,6 +388,16 @@ contract MixinMatchOrders is
             shouldMaximallyFillOrders
         );
 
+        // Settle matched orders. Succeeds or throws.
+        _settleMatchedOrders(
+            leftOrderInfo.orderHash,
+            rightOrderInfo.orderHash,
+            leftOrder,
+            rightOrder,
+            takerAddress,
+            matchedFillResults
+        );
+
         // Update exchange state
         _updateFilledState(
             leftOrder,
@@ -394,16 +412,6 @@ contract MixinMatchOrders is
             rightOrderInfo.orderHash,
             rightOrderInfo.orderTakerAssetFilledAmount,
             matchedFillResults.right
-        );
-
-        // Settle matched orders. Succeeds or throws.
-        _settleMatchedOrders(
-            leftOrderInfo.orderHash,
-            rightOrderInfo.orderHash,
-            leftOrder,
-            rightOrder,
-            takerAddress,
-            matchedFillResults
         );
 
         return matchedFillResults;
@@ -473,7 +481,6 @@ contract MixinMatchOrders is
             takerAddress,
             matchedFillResults.profitInLeftMakerAsset
         );
-
         _dispatchTransferFrom(
             rightOrderHash,
             rightOrder.makerAssetData,
@@ -481,6 +488,37 @@ contract MixinMatchOrders is
             takerAddress,
             matchedFillResults.profitInRightMakerAsset
         );
+
+        // Pay the protocol fees if there is a registered `protocolFeeCollector` address.
+        address feeCollector = protocolFeeCollector;
+        if (feeCollector != address(0)) {
+            // Calculate the protocol fee that should be paid and populate the `protocolFeePaid` field in the left and
+            // right `fillResults` of `matchedFillResults`. It's worth noting that we leave this calculation until now
+            // so that work isn't wasted if a fee collector is not registered in the exchange.
+            uint256 protocolFee = tx.gasprice.safeMul(protocolFeeMultiplier);
+            matchedFillResults.left.protocolFeePaid = protocolFee;
+            matchedFillResults.right.protocolFeePaid = protocolFee;
+
+            // Create a stack variable for the value that will be sent to the feeCollector when `payProtocolFee` is called.
+            // This allows a gas optimization where the `leftOrder.makerAddress` only needs be loaded onto the stack once AND
+            // a stack variable does not need to be allocated for the call.
+            uint256 valuePaid = 0;
+
+            // Pay the left order's protocol fee.
+            if (address(this).balance >= protocolFee) {
+                valuePaid = protocolFee;
+            }
+            IStaking(feeCollector).payProtocolFee.value(valuePaid)(leftOrder.makerAddress, takerAddress, protocolFee);
+
+            // Reset the value paid variable for the next payment.
+            valuePaid = 0;
+
+            // Pay the right order's protocol fee.
+            if (address(this).balance >= protocolFee) {
+                valuePaid = protocolFee;
+            }
+            IStaking(feeCollector).payProtocolFee.value(valuePaid)(rightOrder.makerAddress, takerAddress, protocolFee);
+        }
 
         // Settle taker fees.
         if (

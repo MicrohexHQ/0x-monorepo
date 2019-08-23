@@ -46,7 +46,9 @@ contract MixinWrapperFunctions is
         bytes memory signature
     )
         public
+        payable
         nonReentrant
+        refundFinalBalance
         returns (LibFillResults.FillResults memory fillResults)
     {
         fillResults = _fillOrKillOrder(
@@ -57,6 +59,10 @@ contract MixinWrapperFunctions is
         return fillResults;
     }
 
+    /// Note: This function only needs `refundFinalBalance` modifier because ether will not
+    //        be returned in the event that the delegatecall fails. This said, there is no
+    //        reason to invoke `disableRefundUntilEnd` because it is cheaper to use this modifier
+    //        and the inner refund will not affect the logic of this call.
     /// @dev Fills the input order.
     ///      Returns a null FillResults instance if the transaction would otherwise revert.
     /// @param order Order struct containing order specifications.
@@ -69,6 +75,8 @@ contract MixinWrapperFunctions is
         bytes memory signature
     )
         public
+        payable
+        refundFinalBalance
         returns (LibFillResults.FillResults memory fillResults)
     {
         // ABI encode calldata for `fillOrder`
@@ -99,7 +107,9 @@ contract MixinWrapperFunctions is
         bytes[] memory signatures
     )
         public
+        payable
         nonReentrant
+        disableRefundUntilEnd
         returns (LibFillResults.FillResults[] memory fillResults)
     {
         uint256 ordersLength = orders.length;
@@ -125,7 +135,9 @@ contract MixinWrapperFunctions is
         bytes[] memory signatures
     )
         public
+        payable
         nonReentrant
+        disableRefundUntilEnd
         returns (LibFillResults.FillResults[] memory fillResults)
     {
         uint256 ordersLength = orders.length;
@@ -151,6 +163,8 @@ contract MixinWrapperFunctions is
         bytes[] memory signatures
     )
         public
+        payable
+        disableRefundUntilEnd
         returns (LibFillResults.FillResults[] memory fillResults)
     {
         uint256 ordersLength = orders.length;
@@ -176,6 +190,8 @@ contract MixinWrapperFunctions is
         bytes[] memory signatures
     )
         public
+        payable
+        disableRefundUntilEnd
         returns (LibFillResults.FillResults memory fillResults)
     {
         bytes memory takerAssetData = orders[0].takerAssetData;
@@ -220,6 +236,8 @@ contract MixinWrapperFunctions is
         bytes[] memory signatures
     )
         public
+        payable
+        disableRefundUntilEnd
         returns (LibFillResults.FillResults memory fillResults)
     {
         bytes memory makerAssetData = orders[0].makerAssetData;

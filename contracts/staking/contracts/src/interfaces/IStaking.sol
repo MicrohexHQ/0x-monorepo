@@ -23,13 +23,13 @@ interface IStaking {
 
     /// @dev Pays a protocol fee in ETH.
     /// @param makerAddress The address of the order's maker.
-    function payProtocolFee(address makerAddress)
-        external
-        payable;
-
-    /// @dev Records a protocol fee that was paid in WETH.
-    /// @param makerAddress The address of the order's maker.
-    function recordProtocolFee(address makerAddress)
+    /// @param payerAddress The address that is responsible for paying the protocol fee.
+    /// @param protocolFeePaid The amount of protocol fees that should be paid.
+    function payProtocolFee(
+        address makerAddress,
+        address payerAddress,
+        uint256 protocolFeePaid
+    )
         external
         payable;
 }
