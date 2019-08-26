@@ -18,7 +18,7 @@
 
 pragma solidity ^0.5.9;
 
-import "../libs/LibSafeMath.sol";
+import "@0x/contracts-utils/contracts/src/LibSafeMath.sol";
 import "../libs/LibRewardMath.sol";
 import "../immutable/MixinStorage.sol";
 import "../immutable/MixinConstants.sol";
@@ -114,8 +114,8 @@ contract MixinStakingPoolRewards is
         );
 
         // update shadow rewards
-        shadowRewardsInPoolByOwner[member][poolId] = shadowRewardsInPoolByOwner[member][poolId]._add(amount);
-        shadowRewardsByPoolId[poolId] = shadowRewardsByPoolId[poolId]._add(amount);
+        shadowRewardsInPoolByOwner[member][poolId] = shadowRewardsInPoolByOwner[member][poolId].safeAdd(amount);
+        shadowRewardsByPoolId[poolId] = shadowRewardsByPoolId[poolId].safeAdd(amount);
 
         // perform withdrawal
         _withdrawFromMemberInStakingPoolRewardVault(poolId, amount);
@@ -134,8 +134,8 @@ contract MixinStakingPoolRewards is
         uint256 amount = computeRewardBalanceOfStakingPoolMember(poolId, member);
 
         // update shadow rewards
-        shadowRewardsInPoolByOwner[member][poolId] = shadowRewardsInPoolByOwner[member][poolId]._add(amount);
-        shadowRewardsByPoolId[poolId] = shadowRewardsByPoolId[poolId]._add(amount);
+        shadowRewardsInPoolByOwner[member][poolId] = shadowRewardsInPoolByOwner[member][poolId].safeAdd(amount);
+        shadowRewardsByPoolId[poolId] = shadowRewardsByPoolId[poolId].safeAdd(amount);
 
         // perform withdrawal and return amount withdrawn
         _withdrawFromMemberInStakingPoolRewardVault(poolId, amount);
@@ -246,8 +246,8 @@ contract MixinStakingPoolRewards is
 
         // the buy-in will be > 0 iff there exists a non-zero reward.
         if (buyIn > 0) {
-            shadowRewardsInPoolByOwner[member][poolId] = shadowRewardsInPoolByOwner[member][poolId]._add(buyIn);
-            shadowRewardsByPoolId[poolId] = shadowRewardsByPoolId[poolId]._add(buyIn);
+            shadowRewardsInPoolByOwner[member][poolId] = shadowRewardsInPoolByOwner[member][poolId].safeAdd(buyIn);
+            shadowRewardsByPoolId[poolId] = shadowRewardsByPoolId[poolId].safeAdd(buyIn);
         }
     }
 
@@ -298,8 +298,8 @@ contract MixinStakingPoolRewards is
         }
 
         // update shadow rewards
-        shadowRewardsInPoolByOwner[member][poolId] = shadowRewardsInPoolByOwner[member][poolId]._sub(payoutInShadowAsset);
-        shadowRewardsByPoolId[poolId] = shadowRewardsByPoolId[poolId]._sub(payoutInShadowAsset);
+        shadowRewardsInPoolByOwner[member][poolId] = shadowRewardsInPoolByOwner[member][poolId].safeSub(payoutInShadowAsset);
+        shadowRewardsByPoolId[poolId] = shadowRewardsByPoolId[poolId].safeSub(payoutInShadowAsset);
 
         // withdraw payout for member
         if (payoutInRealAsset > 0) {

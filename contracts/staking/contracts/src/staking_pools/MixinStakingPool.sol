@@ -19,7 +19,7 @@
 pragma solidity ^0.5.9;
 pragma experimental ABIEncoderV2;
 
-import "../libs/LibSafeMath.sol";
+import "@0x/contracts-utils/contracts/src/LibSafeMath.sol";
 import "../libs/LibSignatureValidator.sol";
 import "../libs/LibEIP712Hash.sol";
 import "../interfaces/IStructs.sol";
@@ -135,7 +135,7 @@ contract MixinStakingPool is
         );
         require(
             !isMakerAssignedToStakingPool(makerAddress),
-            "MAKER_ADDRESS_ALREADY_REGISTERED"
+            "MAKERsafeAddRESS_ALREADY_REGISTERED"
         );
         poolIdByMakerAddress[makerAddress] = poolId;
         makerAddressesByPoolId[poolId].push(makerAddress);
@@ -161,7 +161,7 @@ contract MixinStakingPool is
     {
         require(
             getStakingPoolIdOfMaker(makerAddress) == poolId,
-            "MAKER_ADDRESS_NOT_REGISTERED"
+            "MAKERsafeAddRESS_NOT_REGISTERED"
         );
 
         // load list of makers for the input pool.
@@ -307,6 +307,6 @@ contract MixinStakingPool is
         pure
         returns (bytes32)
     {
-        return bytes32(uint256(poolId)._add(POOL_ID_INCREMENT_AMOUNT));
+        return bytes32(uint256(poolId).safeAdd(POOL_ID_INCREMENT_AMOUNT));
     }
 }

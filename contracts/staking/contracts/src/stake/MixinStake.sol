@@ -18,7 +18,7 @@
 
 pragma solidity ^0.5.9;
 
-import "../libs/LibSafeMath.sol";
+import "@0x/contracts-utils/contracts/src/LibSafeMath.sol";
 import "../libs/LibRewardMath.sol";
 import "../immutable/MixinConstants.sol";
 import "../immutable/MixinStorage.sol";
@@ -135,8 +135,8 @@ contract MixinStake is
             amount <= getActivatableStake(owner),
             "INSUFFICIENT_BALANCE"
         );
-        activatedStakeByOwner[owner] = activatedStakeByOwner[owner]._add(amount);
-        totalActivatedStake = totalActivatedStake._add(amount);
+        activatedStakeByOwner[owner] = activatedStakeByOwner[owner].safeAdd(amount);
+        totalActivatedStake = totalActivatedStake.safeAdd(amount);
     }
 
     /// @dev Deactivate & TimeLock stake that is currently in the Activated state.
@@ -150,8 +150,8 @@ contract MixinStake is
             amount <= getActivatedStake(owner),
             "INSUFFICIENT_BALANCE"
         );
-        activatedStakeByOwner[owner] = activatedStakeByOwner[owner]._sub(amount);
-        totalActivatedStake = totalActivatedStake._sub(amount);
+        activatedStakeByOwner[owner] = activatedStakeByOwner[owner].safeSub(amount);
+        totalActivatedStake = totalActivatedStake.safeSub(amount);
         _timeLockStake(owner, amount);
     }
 
@@ -165,7 +165,7 @@ contract MixinStake is
         _depositFromOwnerIntoZrxVault(owner, amount);
 
         // mint stake
-        stakeByOwner[owner] = stakeByOwner[owner]._add(amount);
+        stakeByOwner[owner] = stakeByOwner[owner].safeAdd(amount);
 
         // emit stake event
         emit StakeMinted(
@@ -181,7 +181,7 @@ contract MixinStake is
         internal
     {
         // burn stake
-        stakeByOwner[owner] = stakeByOwner[owner]._sub(amount);
+        stakeByOwner[owner] = stakeByOwner[owner].safeSub(amount);
 
         // withdraw equivalent amount of ZRX from vault
         _withdrawToOwnerFromZrxVault(owner, amount);
