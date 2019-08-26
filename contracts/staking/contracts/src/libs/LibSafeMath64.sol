@@ -23,7 +23,7 @@ library LibSafeMath64 {
 
     /// @dev Returns the addition of two unsigned integers, reverting on overflow.
     /// Note that this reverts on overflow.
-    function _add(uint64 a, uint64 b) internal pure returns (uint64) {
+    function safeAdd(uint64 a, uint64 b) internal pure returns (uint64) {
         uint64 c = a + b;
         require(c >= a, "OVERFLOW");
         return c;
@@ -31,7 +31,7 @@ library LibSafeMath64 {
 
     /// @dev Returns the subtraction of two unsigned integers.
     /// Note that this reverts on underflow.
-    function _sub(uint64 a, uint64 b) internal pure returns (uint64) {
+    function safeSub(uint64 a, uint64 b) internal pure returns (uint64) {
         require(b <= a, "UNDEROVERFLOW");
         uint64 c = a - b;
 
@@ -40,7 +40,7 @@ library LibSafeMath64 {
 
     /// @dev Returns the multiplication of two unsigned integers, reverting on overflow.
     /// Note that this reverts on overflow.
-    function _mul(uint64 a, uint64 b) internal pure returns (uint64) {
+    function safeMul(uint64 a, uint64 b) internal pure returns (uint64) {
         // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
         // benefit is lost if 'b' is also tested.
         // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522
@@ -56,7 +56,7 @@ library LibSafeMath64 {
 
     /// @dev Returns the integer division of two unsigned integers.
     /// Note that this reverts on division by zero. The result is rounded towards zero.
-    function _div(uint64 a, uint64 b) internal pure returns (uint64) {
+    function safeDiv(uint64 a, uint64 b) internal pure returns (uint64) {
         require(b > 0, "DIVISION_BY_ZERO");
         uint64 c = a / b;
         return c;
