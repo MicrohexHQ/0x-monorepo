@@ -13,14 +13,12 @@ import * as IStructs from '../generated-artifacts/IStructs.json';
 import * as IVaultCore from '../generated-artifacts/IVaultCore.json';
 import * as IWallet from '../generated-artifacts/IWallet.json';
 import * as IZrxVault from '../generated-artifacts/IZrxVault.json';
-import * as LibEIP712Hash from '../generated-artifacts/LibEIP712Hash.json';
 import * as LibFeeMath from '../generated-artifacts/LibFeeMath.json';
 import * as LibFeeMathTest from '../generated-artifacts/LibFeeMathTest.json';
 import * as LibRewardMath from '../generated-artifacts/LibRewardMath.json';
 import * as LibSafeMath from '../generated-artifacts/LibSafeMath.json';
 import * as LibSafeMath64 from '../generated-artifacts/LibSafeMath64.json';
 import * as LibSafeMath96 from '../generated-artifacts/LibSafeMath96.json';
-import * as LibSignatureValidator from '../generated-artifacts/LibSignatureValidator.json';
 import * as LibStakingRichErrors from '../generated-artifacts/LibStakingRichErrors.json';
 import * as MixinConstants from '../generated-artifacts/MixinConstants.json';
 import * as MixinDelegatedStake from '../generated-artifacts/MixinDelegatedStake.json';
@@ -58,13 +56,11 @@ export const artifacts = {
     IVaultCore: IVaultCore as ContractArtifact,
     IWallet: IWallet as ContractArtifact,
     IZrxVault: IZrxVault as ContractArtifact,
-    LibEIP712Hash: LibEIP712Hash as ContractArtifact,
     LibFeeMath: LibFeeMath as ContractArtifact,
     LibRewardMath: LibRewardMath as ContractArtifact,
     LibSafeMath: LibSafeMath as ContractArtifact,
     LibSafeMath64: LibSafeMath64 as ContractArtifact,
     LibSafeMath96: LibSafeMath96 as ContractArtifact,
-    LibSignatureValidator: LibSignatureValidator as ContractArtifact,
     LibStakingRichErrors: LibStakingRichErrors as ContractArtifact,
     MixinDelegatedStake: MixinDelegatedStake as ContractArtifact,
     MixinStake: MixinStake as ContractArtifact,
